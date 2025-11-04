@@ -29,6 +29,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "error.h"
+#include "stdbool.h"
 #include "types.h"
 #include "reference.h"
 #include "revspec.h"
@@ -2114,30 +2115,42 @@ Repository_expand_id(Repository *self, PyObject *py_hex)
 }
 
 PyDoc_STRVAR(Repository_add_worktree__doc__,
-    "add_worktree(name: str, path: str | bytes[, ref: Reference]) -> Worktree\n"
+    "add_worktree(name: str, path: str | bytes[, ref: Reference, force: bool = False]) -> Worktree\n"
     "\n"
     "Create a new worktree for this repository. If ref is specified, no new \
     branch will be created and the provided ref will be checked out instead.");
 PyObject *
-Repository_add_worktree(Repository *self, PyObject *args)
+Repository_add_worktree(Repository *self, PyObject *args, PyObject *kwargs)
 {
     char *c_name;
     PyBytesObject *py_path = NULL;
     char *c_path = NULL;
     Reference *py_reference = NULL;
+    bool force_checkout = false;
+    static char* kwlist[] = {"name", "path", "ref", "force", NULL};
+
     git_worktree *wt;
     git_worktree_add_options add_opts = GIT_WORKTREE_ADD_OPTIONS_INIT;
 
     int err;
 
-    if (!PyArg_ParseTuple(args, "sO&|O!", &c_name, PyUnicode_FSConverter, &py_path, &ReferenceType, &py_reference))
+    if (!PyArg_ParseTupleAndKeywords(
+        args, kwargs, "sO&|O!$p", kwlist,
+        &c_name,
+        PyUnicode_FSConverter, &py_path,
+        &ReferenceType, &py_reference,
+        &force_checkout))
         return NULL;
 
     if (py_path != NULL)
         c_path = PyBytes_AS_STRING(py_path);
 
-    if(py_reference != NULL)
+    if (py_reference != NULL)
         add_opts.ref = py_reference->reference;
+
+    if (force_checkout) {
+        add_opts.checkout_options.checkout_strategy = GIT_CHECKOUT_FORCE;
+    }
 
     err = git_worktree_add(&wt, self->repo, c_name, c_path, &add_opts);
     Py_XDECREF(py_path);
@@ -2468,7 +2481,7 @@ PyMethodDef Repository_methods[] = {
     METHOD(Repository, reset, METH_VARARGS),
     METHOD(Repository, free, METH_NOARGS),
     METHOD(Repository, expand_id, METH_O),
-    METHOD(Repository, add_worktree, METH_VARARGS),
+    METHOD(Repository, add_worktree, METH_VARARGS | METH_KEYWORDS),
     METHOD(Repository, lookup_worktree, METH_VARARGS),
     METHOD(Repository, list_worktrees, METH_VARARGS),
     METHOD(Repository, _from_c, METH_VARARGS),

@@ -57,7 +57,7 @@ PyObject* Repository_references_iterator_init(Repository *self, PyObject *args);
 PyObject* Repository_references_iterator_next(Repository *self, PyObject *args);
 PyObject* Repository_listall_branches(Repository *self, PyObject *args);
 PyObject* Repository_lookup_reference(Repository *self, PyObject *py_name);
-PyObject* Repository_add_worktree(Repository *self, PyObject *args);
+PyObject* Repository_add_worktree(Repository *self, PyObject *args, PyObject *kwargs);
 PyObject* Repository_lookup_worktree(Repository *self, PyObject *py_name);
 PyObject* Repository_list_worktrees(Repository *self, PyObject *args);
 

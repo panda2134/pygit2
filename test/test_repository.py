@@ -867,7 +867,7 @@ def test_worktree(testrepo: Repository) -> None:
     # We should have zero worktrees
     assert testrepo.list_worktrees() == []
     # Add a worktree
-    worktree = testrepo.add_worktree(worktree_name, str(worktree_dir))
+    worktree = testrepo.add_worktree(worktree_name, str(worktree_dir), force=True)
     # Check that the worktree was added properly
     _check_worktree(worktree)
     # We should have one worktree now
