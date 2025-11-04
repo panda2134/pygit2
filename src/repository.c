@@ -2149,6 +2149,7 @@ Repository_add_worktree(Repository *self, PyObject *args, PyObject *kwargs)
         add_opts.ref = py_reference->reference;
 
     if (force_checkout) {
+        git_checkout_options_init(&add_opts.checkout_options, GIT_CHECKOUT_OPTIONS_VERSION);
         add_opts.checkout_options.checkout_strategy = GIT_CHECKOUT_FORCE;
     }
 
